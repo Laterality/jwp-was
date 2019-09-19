@@ -8,29 +8,25 @@ import webserver.Response;
 
 import java.util.Map;
 
-public class UserController {
+public class LoginController extends AbstractController {
 
-    public static final String USER_CREATE_URL = "/user/create";
-    public static final String USER_LOGIN_URL = "/user/login";
+    private static final String USER_LOGIN_URL = "/user/login";
+
     private static final String USER_ID = "userId";
     private static final String PASSWORD = "password";
-    private static final String NAME = "name";
-    private static final String EMAIL = "email";
     private static final String LOGINED_COOKIE_KEY = "logined";
 
-    public static Response signUp(Request req) {
-        Map<String, String> parsedBody = UrlEncodedParser.parse(new String(req.getBody()));
-        User user = new User(parsedBody.get(USER_ID),
-                parsedBody.get(PASSWORD),
-                parsedBody.get(NAME),
-                parsedBody.get(EMAIL));
-        DataBase.addUser(user);
-
-        return Response.ResponseBuilder.redirect("/index.html")
-                .build();
+    private static boolean verifyUser(Map<String, String> parsedBody, User found) {
+        return found != null && found.matchPassword(parsedBody.get(PASSWORD));
     }
 
-    public static Response login(Request req) {
+    @Override
+    public Response doGet(Request req) {
+        throw createUnsupportedException();
+    }
+
+    @Override
+    public Response doPost(Request req) {
         Map<String, String> parsedBody = UrlEncodedParser.parse(new String(req.getBody()));
         User found = DataBase.findUserById(parsedBody.get(USER_ID));
 
@@ -47,7 +43,8 @@ public class UserController {
                 .build();
     }
 
-    private static boolean verifyUser(Map<String, String> parsedBody, User found) {
-        return found != null && found.matchPassword(parsedBody.get(PASSWORD));
+    @Override
+    public String getPath() {
+        return USER_LOGIN_URL;
     }
 }

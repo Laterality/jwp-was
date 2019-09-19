@@ -1,6 +1,11 @@
-package webserver;
+package controller;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import webserver.RequestDispatcher;
+import webserver.RequestParser;
+import webserver.Response;
+import webserver.Status;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,23 +14,17 @@ import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserControllerTest {
+public class LoginControllerTest {
 
     private static final String TEST_DIRECTORY = "./src/test/resources";
 
-    @Test
-    void create() throws IOException {
-        InputStream in = new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"));
-        Response res = RequestDispatcher.handle(RequestParser.parse(in));
-
-        assertThat(res.getStatus()).isEqualTo(Status.FOUND);
-        assertThat(res.getHeader("Location")).isEqualTo("/index.html");
+    @BeforeAll
+    static void init() throws IOException {
+        RequestDispatcher.handle(RequestParser.parse(new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"))));
     }
 
     @Test
     void login() throws IOException {
-        RequestDispatcher.handle(RequestParser.parse(new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"))));
-
         InputStream in = new FileInputStream(new File(TEST_DIRECTORY + "/PostLogin.txt"));
         Response res = RequestDispatcher.handle(RequestParser.parse(in));
 
@@ -36,8 +35,6 @@ public class UserControllerTest {
 
     @Test
     void login_failed() throws IOException {
-        RequestDispatcher.handle(RequestParser.parse(new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"))));
-
         InputStream in = new FileInputStream(new File(TEST_DIRECTORY + "/PostLoginFailed.txt"));
         Response res = RequestDispatcher.handle(RequestParser.parse(in));
 
