@@ -40,6 +40,7 @@ public class RequestHandler implements Runnable {
         try {
             writeHeader(dos, response);
             writeCookie(dos, response);
+            dos.writeBytes(NEXT_LINE);
             writeBody(dos, response);
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -51,7 +52,6 @@ public class RequestHandler implements Runnable {
         writeContentType(dos, response);
         response.getHeaderKeys()
                 .forEach(k -> writeHeaderLine(dos, k + ": " + response.getHeader(k)));
-        dos.writeBytes(NEXT_LINE);
     }
 
     private void writeContentType(DataOutputStream dos, Response response) {
