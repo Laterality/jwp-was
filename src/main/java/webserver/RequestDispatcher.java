@@ -22,10 +22,11 @@ public class RequestDispatcher {
         viewController = new ViewController();
         SignUpController signUpController = new SignUpController();
         LoginController loginController = new LoginController();
+        UserListController userListController = new UserListController();
 
         controllers.put(signUpController.getPath(), signUpController);
         controllers.put(loginController.getPath(), loginController);
-
+        controllers.put(userListController.getPath(), userListController);
     }
 
     public static Response handle(Request request) {
