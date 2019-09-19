@@ -6,8 +6,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class RequestParser {
 
@@ -17,6 +19,8 @@ public class RequestParser {
     private static final String FIRST_LINE_DELIMITER = " ";
     private static final String PATH_QUERY_DELIMITER = "?";
     private static final String PATH_QUERY_DELIMITER_REGEX = "\\?";
+    private static final String COOKIE_HEADER_KEY = "Cookie";
+    private static final String COOKIE_PAIR_DELIMITER = "; ";
 
     public static Request parse(InputStream in) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -31,10 +35,13 @@ public class RequestParser {
         Map<String, String> headers = new HashMap<>();
         parseHeader(br, headers);
 
+        Map<String, String> cookies = new HashMap<>();
+        parseCookie(headers, cookies);
+
         char[] buf = new char[MAX_BODY_SIZE];
         readToBuffer(br, buf);
 
-        return new Request(method, url, queries, headers, new String(buf).getBytes());
+        return new Request(method, url, queries, headers, cookies, new String(buf).getBytes());
     }
 
     private static void parseQueryString(String pair, Map<String, String> queries) {
@@ -44,15 +51,8 @@ public class RequestParser {
         }
     }
 
-    private static void readToBuffer(BufferedReader br, char[] buf) throws IOException {
-        if (br.ready()) {
-            br.read(buf);
-        }
-    }
-
     private static void parseHeader(BufferedReader br, Map<String, String> headers) throws IOException {
-        String line;
-        line = br.readLine();
+        String line = br.readLine();
         while (hasMoreLine(line)) {
             String[] headerTokens = line.split(HEADER_DELIMITER, HEADER_SPLIT_LIMIT);
             headers.put(headerTokens[0], headerTokens[1]);
@@ -62,5 +62,21 @@ public class RequestParser {
 
     private static boolean hasMoreLine(String line) {
         return !(line == null || line.isEmpty());
+    }
+
+    private static void parseCookie(Map<String, String> headers, Map<String, String> cookies) {
+        if (headers.containsKey(COOKIE_HEADER_KEY)) {
+            String[] tokens = headers.get(COOKIE_HEADER_KEY).split(COOKIE_PAIR_DELIMITER);
+            Arrays.stream(tokens)
+                    .map(UrlEncodedParser::parsePairWithEqualSign)
+                    .filter(Objects::nonNull)
+                    .forEach(tuple -> cookies.put(tuple.getKey(), tuple.getValue()));
+        }
+    }
+
+    private static void readToBuffer(BufferedReader br, char[] buf) throws IOException {
+        if (br.ready()) {
+            br.read(buf);
+        }
     }
 }

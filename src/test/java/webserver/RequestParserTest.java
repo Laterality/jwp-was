@@ -19,7 +19,7 @@ public class RequestParserTest {
                     "Host: localhost:8080\r\n" +
                     "Accept-Encoding: gzip, deflate\r\n" +
                     "Content-Length: 26\r\n" +
-                    "Cookie: JSESSIONID=471133FFBC577D4F5BCB5F45AE944BF7\r\n" +
+                    "Cookie: JSESSIONID=471133FFBC577D4F5BCB5F45AE944BF7; logined=true\r\n" +
                     "Connection: keep-alive\r\n" +
                     "\r\n" +
                     "This is body").getBytes();
@@ -29,7 +29,7 @@ public class RequestParserTest {
         Request req = RequestParser.parse(new ByteArrayInputStream(REQUEST_BYTE));
 
         assertThat(req.getMethod()).isEqualTo("POST");
-        assertThat(req.getUrl()).isEqualTo("/");
+        assertThat(req.getPath()).isEqualTo("/");
         assertThat(req.getHeader("Content-Length")).isEqualTo("26");
         assertThat(new String(req.getBody()).trim()).isEqualTo("This is body");
     }
@@ -38,8 +38,15 @@ public class RequestParserTest {
     void querystring() throws IOException {
         Request req = RequestParser.parse(new ByteArrayInputStream("GET /some-resource?q=abcde&email=john%40example.com".getBytes()));
 
-        assertThat(req.getUrl()).isEqualTo("/some-resource");
+        assertThat(req.getPath()).isEqualTo("/some-resource");
         assertThat(req.getQuery("q")).isEqualTo("abcde");
         assertThat(req.getQuery("email")).isEqualTo("john@example.com");
+    }
+
+    @Test
+    void parse_cookie() throws IOException {
+        Request req = RequestParser.parse(new ByteArrayInputStream(REQUEST_BYTE));
+
+        assertThat(req.getCookie("logined")).isEqualTo("true");
     }
 }
