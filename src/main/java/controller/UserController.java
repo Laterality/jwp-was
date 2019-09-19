@@ -5,35 +5,49 @@ import model.User;
 import utils.UrlEncodedParser;
 import webserver.Request;
 import webserver.Response;
-import webserver.Status;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class UserController {
 
     public static final String USER_CREATE_URL = "/user/create";
+    public static final String USER_LOGIN_URL = "/user/login";
     private static final String USER_ID = "userId";
     private static final String PASSWORD = "password";
     private static final String NAME = "name";
     private static final String EMAIL = "email";
-    private static final String LOCATION_HEADER_KEY = "Location";
+    private static final String LOGINED_COOKIE_KEY = "logined";
 
     public static Response signUp(Request req) {
-        String body = new String(req.getBody());
-        Map<String, String> parsedBody = UrlEncodedParser.parse(body);
+        Map<String, String> parsedBody = UrlEncodedParser.parse(new String(req.getBody()));
         User user = new User(parsedBody.get(USER_ID),
                 parsedBody.get(PASSWORD),
                 parsedBody.get(NAME),
                 parsedBody.get(EMAIL));
         DataBase.addUser(user);
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put(LOCATION_HEADER_KEY, "/index.html");
-
-        return Response.ResponseBuilder.createBuilder()
-                .withStatus(Status.FOUND)
-                .withHeaders(headers)
+        return Response.ResponseBuilder.redirect("/index.html")
                 .build();
+    }
+
+    public static Response login(Request req) {
+        Map<String, String> parsedBody = UrlEncodedParser.parse(new String(req.getBody()));
+        User found = DataBase.findUserById(parsedBody.get(USER_ID));
+
+        String redirectUrl = "/user/login_failed.html";
+        String loginedCookie = "false";
+
+        if (verifyUser(parsedBody, found)) {
+            redirectUrl = "/index.html";
+            loginedCookie = "true";
+        }
+
+        return Response.ResponseBuilder.redirect(redirectUrl)
+                .withCookie(LOGINED_COOKIE_KEY, loginedCookie)
+                .build();
+    }
+
+    private static boolean verifyUser(Map<String, String> parsedBody, User found) {
+        return found != null && found.matchPassword(parsedBody.get(PASSWORD));
     }
 }

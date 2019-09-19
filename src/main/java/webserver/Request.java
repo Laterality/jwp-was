@@ -4,14 +4,14 @@ import java.util.Map;
 
 public class Request {
 
-    private final String method;
+    private final HttpMethod method;
     private final String path;
     private final Map<String, String> queries;
     private final Map<String, String> headers;
     private final Map<String, String> cookies;
     private final byte[] body;
 
-    public Request(String method, String path, Map<String, String> queries, Map<String, String> headers, Map<String, String> cookies, byte[] body) {
+    public Request(HttpMethod method, String path, Map<String, String> queries, Map<String, String> headers, Map<String, String> cookies, byte[] body) {
         this.method = method;
         this.path = path;
         this.queries = queries;
@@ -20,7 +20,11 @@ public class Request {
         this.body = body;
     }
 
-    public String getMethod() {
+    public boolean matchMethod(HttpMethod method) {
+        return this.method.equals(method);
+    }
+
+    public HttpMethod getMethod() {
         return method;
     }
 

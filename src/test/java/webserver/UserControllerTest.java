@@ -1,32 +1,48 @@
 package webserver;
 
-import controller.UserController;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserControllerTest {
 
-    private WebTestClient webTestClient;
+    private static final String TEST_DIRECTORY = "./src/test/resources";
 
-    @BeforeEach
-    void setup() {
-        webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build();
+    @Test
+    void create() throws IOException {
+        InputStream in = new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"));
+        Response res = RequestDispatcher.handle(RequestParser.parse(in));
+
+        assertThat(res.getStatus()).isEqualTo(Status.FOUND);
+        assertThat(res.getHeader("Location")).isEqualTo("/index.html");
     }
 
     @Test
-    void create() {
-        webTestClient.post()
-                .uri(UserController.USER_CREATE_URL)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(BodyInserters.fromFormData("userId", "john123")
-                .with("password", "p@ssW0rd")
-                .with("name", "john")
-                .with("email", "john@example.com"))
-                .exchange()
-                .expectStatus().is3xxRedirection()
-                .expectHeader().valueMatches("Location", "/index.html");
+    void login() throws IOException {
+        RequestDispatcher.handle(RequestParser.parse(new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"))));
+
+        InputStream in = new FileInputStream(new File(TEST_DIRECTORY + "/PostLogin.txt"));
+        Response res = RequestDispatcher.handle(RequestParser.parse(in));
+
+        assertThat(res.getStatus()).isEqualTo(Status.FOUND);
+        assertThat(res.getHeader("Location")).isEqualTo("/index.html");
+        assertThat(res.getCookie("logined")).isEqualTo("true");
+    }
+
+    @Test
+    void login_failed() throws IOException {
+        RequestDispatcher.handle(RequestParser.parse(new FileInputStream(new File(TEST_DIRECTORY + "/PostSignUp.txt"))));
+
+        InputStream in = new FileInputStream(new File(TEST_DIRECTORY + "/PostLoginFailed.txt"));
+        Response res = RequestDispatcher.handle(RequestParser.parse(in));
+
+        assertThat(res.getStatus()).isEqualTo(Status.FOUND);
+        assertThat(res.getHeader("Location")).isEqualTo("/user/login_failed.html");
+        assertThat(res.getCookie("logined")).isEqualTo("false");
     }
 }
