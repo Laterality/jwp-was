@@ -1,8 +1,13 @@
 package webserver;
 
+import session.HttpSession;
+import session.SessionManager;
+
 import java.util.Map;
 
 public class Request {
+
+    static final String SESSION_COOKIE_KEY = "SID";
 
     private final HttpMethod method;
     private final String path;
@@ -10,6 +15,7 @@ public class Request {
     private final Map<String, String> headers;
     private final Map<String, String> cookies;
     private final byte[] body;
+    private HttpSession session;
 
     public Request(HttpMethod method, String path, Map<String, String> queries, Map<String, String> headers, Map<String, String> cookies, byte[] body) {
         this.method = method;
@@ -18,6 +24,23 @@ public class Request {
         this.headers = headers;
         this.cookies = cookies;
         this.body = body;
+    }
+
+    public HttpSession getSession() {
+        if (session == null) {
+            session = getValidSession();
+        }
+
+        return session;
+    }
+
+    private HttpSession getValidSession() {
+        HttpSession currentSession = SessionManager.getSession(cookies.get(SESSION_COOKIE_KEY));
+        if (currentSession == null || !currentSession.isValid()) {
+            SessionManager.addSession(HttpSession.create());
+        }
+
+        return currentSession;
     }
 
     public boolean matchMethod(HttpMethod method) {
