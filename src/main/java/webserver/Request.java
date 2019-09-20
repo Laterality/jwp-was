@@ -36,11 +36,17 @@ public class Request {
 
     private HttpSession getValidSession() {
         HttpSession currentSession = SessionManager.getSession(cookies.get(SESSION_COOKIE_KEY));
-        if (currentSession == null || !currentSession.isValid()) {
-            SessionManager.addSession(HttpSession.create());
+        if (currentSession != null && currentSession.isValid()) {
+            return session;
         }
 
-        return currentSession;
+        return createNewSession();
+    }
+
+    private HttpSession createNewSession() {
+        HttpSession newSession = HttpSession.create();
+        SessionManager.addSession(newSession);
+        return newSession;
     }
 
     public boolean matchMethod(HttpMethod method) {
