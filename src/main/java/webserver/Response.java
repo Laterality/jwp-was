@@ -1,6 +1,7 @@
 package webserver;
 
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
@@ -84,22 +85,25 @@ public class Response {
                     .withHeader("Location", redirectUrl);
         }
 
-        public static ResponseBuilder forward(String viewName) {
+        public static ResponseBuilder forward(String viewName, Object object) {
             try {
-                TemplateLoader loader = new ClassPathTemplateLoader();
-                loader.setPrefix("/templates");
-                loader.setSuffix(".html");
-                Handlebars handlebars = new Handlebars(loader);
-
-                Template template = handlebars.compile(viewName);
-
                 return createBuilder()
                         .withStatus(Status.OK)
-                        .withBody(template.apply(null).getBytes());
+                        .withBody(createTemplate(viewName).apply(object).getBytes());
             } catch (IOException e) {
                 logger.error("Error while forward: ", e);
             }
             return null;
+        }
+
+        private static Template createTemplate(String viewName) throws IOException {
+            TemplateLoader loader = new ClassPathTemplateLoader();
+            loader.setPrefix("/templates");
+            loader.setSuffix(".html");
+            Handlebars handlebars = new Handlebars(loader);
+            handlebars.registerHelper("inc", (Helper<Integer>) (context, options) -> context + 1);
+
+            return handlebars.compile(viewName);
         }
 
         public ResponseBuilder withStatus(Status status) {
