@@ -69,7 +69,7 @@ public class HttpRequest {
         return path;
     }
 
-    public Map<String, ?> getBody() {
-        return body;
+    public <T> Map<String, T> getBody(Class<T> clazz) {
+        return (Map<String, T>) body;
     }
 }

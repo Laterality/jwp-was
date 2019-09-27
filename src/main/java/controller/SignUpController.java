@@ -24,7 +24,7 @@ public class SignUpController extends AbstractController {
 
     @Override
     public void doPost(HttpRequest req, HttpResponse res) {
-        Map<String, String> parsedBody = (Map<String, String>) req.getBody();
+        Map<String, String> parsedBody = req.getBody(String.class);
         User user = new User(parsedBody.get(USER_ID),
             parsedBody.get(PASSWORD),
             parsedBody.get(NAME),

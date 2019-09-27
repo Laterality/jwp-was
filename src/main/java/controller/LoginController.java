@@ -26,7 +26,7 @@ public class LoginController extends AbstractController {
 
     @Override
     public void doPost(HttpRequest req, HttpResponse response) {
-        Map<String, String> parsedBody = (Map<String, String>) req.getBody();
+        Map<String, String> parsedBody = req.getBody(String.class);
         User found = DataBase.findUserById(parsedBody.get(USER_ID));
 
         String redirectUrl = "/user/login_failed.html";

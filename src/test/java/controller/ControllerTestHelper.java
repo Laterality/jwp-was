@@ -1,13 +1,22 @@
 package controller;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
+import webserver.WebServer;
 
-public class SingUpControllerTest extends ControllerTestHelper {
+public class ControllerTestHelper {
 
-    @Test
-    void create() {
+    protected WebTestClient webTestClient;
+    protected Thread serverThread;
+
+    @BeforeEach
+    void setup() {
+        webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build();
+        serverThread = new Thread(() -> WebServer.main(new String[0]));
+        serverThread.start();
         webTestClient.post()
             .uri(SignUpController.USER_CREATE_URL)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -21,4 +30,9 @@ public class SingUpControllerTest extends ControllerTestHelper {
             .expectBody().returnResult();
     }
 
+
+    @AfterEach
+    void cleanup() {
+        serverThread.interrupt();
+    }
 }

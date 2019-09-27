@@ -27,7 +27,7 @@ public class RequestParserTest {
         assertThat(req.getMethod()).isEqualTo(HttpMethod.POST);
         assertThat(req.getUrl()).isEqualTo("/");
         assertThat(req.getHeader("Content-Length")).isEqualTo("26");
-        assertThat(((String) req.getBody().get("message")).trim()).isEqualTo("This is body");
+        assertThat((req.getBody(String.class).get("message")).trim()).isEqualTo("This is body");
     }
 
     @Test
